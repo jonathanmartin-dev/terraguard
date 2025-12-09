@@ -25,31 +25,92 @@ Navigate to the project root directory and run:
 ```bash
 # Install the package in editable mode for development
 pip install -e .
-
-# Or install dependencies only
-pip install -r requirements.txt
 ```
 
-## 📖 Quick Start
+## 📖 Usage
 
-1. **Generate a Terraform plan JSON file:**
+After installation, you can use the `tguard` command to assess risk in your Terraform plan JSON files.
 
-   ```bash
-   terraform plan -out=plan.out
-   terraform show -json plan.out > plan.json
-   ```
+### Basic Usage
 
-2. **Run the risk assessment:**
+```bash
+tguard <path-to-terraform-plan.json>
+```
 
-   ```bash
-   tguard plan.json
-   ```
+### Example
 
-3. **The tool will:**
-   - Analyze the plan and assess risk
-   - Print a markdown summary to stdout
-   - Optionally post a comment to GitHub (if running in GitHub Actions)
-   - Exit with code 1 if risk exceeds threshold (default: HIGH)
+```bash
+tguard tests/fixtures/vpc.tfplan.json
+```
+
+**Example Output:**
+
+```
+### Terraform Plan Risk Assessment
+
+**Risk Level:** `HIGH` (score: 90)
+
+**Change Summary:**
+- Total resources with changes: `31`
+- Creates: `31`
+- Updates: `0`
+- Deletes: `0`
+- High risk changes: `0`
+- Critical changes: `0`
+- High risk deletes: `0`
+- Critical deletes: `0`
+
+**Reasons / Signals:**
+- 31 resource(s) will be changed (create/update/delete).
+- High count of changes or deletions (Blast Radius).
+
+
+Risk level `HIGH` is >= fail-on threshold `HIGH`. Failing for manual review.
+```
+
+The tool will exit with a non-zero status code if the assessed risk level meets or exceeds the configured threshold (default: `HIGH`), making it suitable for CI/CD pipeline gating.
+
+### Using a Custom Risk Configuration
+
+You can specify your own risk configuration file using the `--risk-config-path` option:
+
+```bash
+tguard tests/fixtures/vpc.tfplan.json --risk-config-path ./my-custom-risk-config.json
+```
+
+Or set it via environment variable:
+
+```bash
+export RISK_CONFIG_PATH=./my-custom-risk-config.json
+tguard tests/fixtures/vpc.tfplan.json
+```
+
+**Example Risk Configuration (`risk_config.json`):**
+
+```json
+{
+  "resource_risk_patterns": [
+    {
+      "pattern": "^aws_iam_.*",
+      "risk_level": "CRITICAL",
+      "reason": "Identity and Access Management resources are highly sensitive."
+    },
+    {
+      "pattern": "^aws_security_group$",
+      "risk_level": "HIGH",
+      "reason": "Firewall rules control network access."
+    },
+    {
+      "pattern": "^aws_db_instance$",
+      "risk_level": "HIGH",
+      "reason": "Database changes risk data integrity/availability."
+    }
+  ],
+  "default_risk_level": "LOW"
+}
+```
+
+The configuration uses regular expressions to match Terraform resource types and assign risk levels. Patterns are evaluated in order, and the highest matching risk level is used.
 
 ## 🔧 How It Works
 
@@ -83,33 +144,6 @@ Explore the documentation to learn more:
 - **[Usage Guide](usage.md)** - Detailed usage examples, CLI options, and GitHub Actions integration
 - **[Configuration](configuration.md)** - Risk configuration file format, examples, and best practices
 - **[API Reference](api/index.md)** - Complete API documentation for all modules
-
-## 💡 Example Output
-
-The tool generates a markdown summary like this:
-
-```markdown
-### Terraform Plan Risk Assessment
-
-**Risk Level:** `MEDIUM` (score: 50)
-
-**Change Summary:**
-
-- Total resources with changes: `5`
-- Creates: `2`
-- Updates: `2`
-- Deletes: `1`
-- High risk changes: `1`
-- Critical changes: `0`
-- High risk deletes: `0`
-- Critical deletes: `0`
-
-**Reasons / Signals:**
-
-- 5 resource(s) will be changed (create/update/delete).
-- 1 resource(s) will be deleted.
-- 1 HIGH risk resource(s) will be changed.
-```
 
 ## 🤝 Contributing
 

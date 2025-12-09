@@ -2,7 +2,7 @@
 
 ## Basic Usage
 
-The dynamic approvals bot analyzes Terraform plan JSON files and assesses risk levels.
+Terraguard analyzes Terraform plan JSON files and assesses risk levels.
 
 ### Generate Terraform Plan JSON
 
@@ -57,14 +57,73 @@ The tool will:
 ### Basic Assessment
 
 ```bash
-tguard plan.json
+tguard tests/fixtures/vpc.tfplan.json
+```
+
+**Example Output:**
+
+```
+### Terraform Plan Risk Assessment
+
+**Risk Level:** `HIGH` (score: 90)
+
+**Change Summary:**
+- Total resources with changes: `31`
+- Creates: `31`
+- Updates: `0`
+- Deletes: `0`
+- High risk changes: `0`
+- Critical changes: `0`
+- High risk deletes: `0`
+- Critical deletes: `0`
+
+**Reasons / Signals:**
+- 31 resource(s) will be changed (create/update/delete).
+- High count of changes or deletions (Blast Radius).
+
+
+Risk level `HIGH` is >= fail-on threshold `HIGH`. Failing for manual review.
 ```
 
 ### Custom Risk Configuration
 
 ```bash
-tguard plan.json --risk-config-path ./custom-risk-config.json
+tguard tests/fixtures/vpc.tfplan.json --risk-config-path ./my-custom-risk-config.json
 ```
+
+Or set it via environment variable:
+
+```bash
+export RISK_CONFIG_PATH=./my-custom-risk-config.json
+tguard tests/fixtures/vpc.tfplan.json
+```
+
+**Example Risk Configuration (`risk_config.json`):**
+
+```json
+{
+  "resource_risk_patterns": [
+    {
+      "pattern": "^aws_iam_.*",
+      "risk_level": "CRITICAL",
+      "reason": "Identity and Access Management resources are highly sensitive."
+    },
+    {
+      "pattern": "^aws_security_group$",
+      "risk_level": "HIGH",
+      "reason": "Firewall rules control network access."
+    },
+    {
+      "pattern": "^aws_db_instance$",
+      "risk_level": "HIGH",
+      "reason": "Database changes risk data integrity/availability."
+    }
+  ],
+  "default_risk_level": "LOW"
+}
+```
+
+The configuration uses regular expressions to match Terraform resource types and assign risk levels. Patterns are evaluated in order, and the highest matching risk level is used.
 
 ### Fail on Medium Risk
 
@@ -88,7 +147,7 @@ tguard plan.json
 
 ## GitHub Actions Integration
 
-The bot automatically detects when running in GitHub Actions and will post comments to pull requests if:
+Terraguard automatically detects when running in GitHub Actions and will post comments to pull requests if:
 
 1. The workflow is triggered by a `pull_request` or `pull_request_target` event
 2. `GITHUB_TOKEN` environment variable is set (usually automatic in GitHub Actions)
@@ -122,8 +181,8 @@ jobs:
           terraform plan -out=plan.out
           terraform show -json plan.out > ../plan.json
 
-      - name: Install Dynamic Approvals Bot
-        run: pip install -r requirements.txt
+      - name: Install Terraguard
+        run: pip install -e .
 
       - name: Assess Risk
         env:
