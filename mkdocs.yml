@@ -1,0 +1,58 @@
+site_name: Terraguard
+site_description: A lightweight Terraform plan risk assessor for CI/CD pipelines
+site_url: https://github.com/jonathanmartin-dev/terraguard/wiki
+repo_url: https://github.com/jonathanmartin-dev/terraguard/wiki
+repo_name: terraguard
+
+docs_dir: docs
+
+nav:
+  - Home: index.md
+  - Usage: usage.md
+  - Configuration: configuration.md
+  - API Reference:
+      - api/index.md
+      - api/cli.md
+      - api/config.md
+      - api/terraform-plan.md
+      - api/risk.md
+      - api/outputs.md
+
+plugins:
+  - search
+  - ezlinks
+  - github-wiki-edit-url
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: false
+            show_root_toc_entry: true
+            filters:
+              - "!^_" # Exclude private members
+              - "!^__" # Exclude special members
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight

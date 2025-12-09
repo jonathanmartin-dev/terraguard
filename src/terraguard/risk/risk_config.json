@@ -1,0 +1,40 @@
+{
+  "resource_risk_patterns": [
+    {
+      "pattern": "^aws_iam_.*",
+      "risk_level": "CRITICAL",
+      "reason": "Identity and Access Management resources are highly sensitive."
+    },
+    {
+      "pattern": "^aws_security_group$",
+      "risk_level": "HIGH",
+      "reason": "Firewall rules control network access."
+    },
+    {
+      "pattern": "^aws_db_instance$",
+      "risk_level": "HIGH",
+      "reason": "Database changes risk data integrity/availability."
+    },
+    {
+      "pattern": "^google_compute_firewall$",
+      "risk_level": "HIGH",
+      "reason": "GCP network access control."
+    },
+    {
+      "pattern": "^azurerm_network_security_group$",
+      "risk_level": "HIGH",
+      "reason": "Azure network access control."
+    },
+    {
+      "pattern": "^aws_vpc$",
+      "risk_level": "MEDIUM",
+      "reason": "VPC/Network changes impact connectivity."
+    },
+    {
+      "pattern": ".*null_resource.*",
+      "risk_level": "LOW",
+      "reason": "Generally benign resource."
+    }
+  ],
+  "default_risk_level": "LOW"
+}
