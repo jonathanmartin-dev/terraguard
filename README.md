@@ -27,6 +27,91 @@ Navigate to the project root directory and run:
 pip install -e .
 ```
 
+## 📖 Usage
+
+After installation, you can use the `tguard` command to assess risk in your Terraform plan JSON files.
+
+### Basic Usage
+
+```bash
+tguard <path-to-terraform-plan.json>
+```
+
+### Example
+
+```bash
+tguard tests/fixtures/vpc.tfplan.json
+```
+
+**Example Output:**
+
+```
+### Terraform Plan Risk Assessment
+
+**Risk Level:** `HIGH` (score: 90)
+
+**Change Summary:**
+- Total resources with changes: `31`
+- Creates: `31`
+- Updates: `0`
+- Deletes: `0`
+- High risk changes: `0`
+- Critical changes: `0`
+- High risk deletes: `0`
+- Critical deletes: `0`
+
+**Reasons / Signals:**
+- 31 resource(s) will be changed (create/update/delete).
+- High count of changes or deletions (Blast Radius).
+
+
+Risk level `HIGH` is >= fail-on threshold `HIGH`. Failing for manual review.
+```
+
+The tool will exit with a non-zero status code if the assessed risk level meets or exceeds the configured threshold (default: `HIGH`), making it suitable for CI/CD pipeline gating.
+
+### Using a Custom Risk Configuration
+
+You can specify your own risk configuration file using the `--risk-config-path` option:
+
+```bash
+tguard tests/fixtures/vpc.tfplan.json --risk-config-path ./my-custom-risk-config.json
+```
+
+Or set it via environment variable:
+
+```bash
+export RISK_CONFIG_PATH=./my-custom-risk-config.json
+tguard tests/fixtures/vpc.tfplan.json
+```
+
+**Example Risk Configuration (`risk_config.json`):**
+
+```json
+{
+  "resource_risk_patterns": [
+    {
+      "pattern": "^aws_iam_.*",
+      "risk_level": "CRITICAL",
+      "reason": "Identity and Access Management resources are highly sensitive."
+    },
+    {
+      "pattern": "^aws_security_group$",
+      "risk_level": "HIGH",
+      "reason": "Firewall rules control network access."
+    },
+    {
+      "pattern": "^aws_db_instance$",
+      "risk_level": "HIGH",
+      "reason": "Database changes risk data integrity/availability."
+    }
+  ],
+  "default_risk_level": "LOW"
+}
+```
+
+The configuration uses regular expressions to match Terraform resource types and assign risk levels. Patterns are evaluated in order, and the highest matching risk level is used.
+
 ## 🛠️ Development Setup
 
 To set up the project for development:
