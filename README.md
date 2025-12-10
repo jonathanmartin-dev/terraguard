@@ -2,6 +2,10 @@
 
 A lightweight, multi-cloud Terraform plan risk assessor designed for Continuous Integration (CI) environments, specifically GitHub Actions. It analyzes resource changes in a Terraform plan and determines a risk level, optionally failing the CI build for required manual review.
 
+## 📚 Documentation
+
+For detailed documentation, including API reference, configuration guides, and more examples, visit the [documentation site](https://jonathanmartin-dev.github.io/terraguard/).
+
 ## 🚀 Features
 
 - **Risk Scoring:** Assigns a risk level (LOW, MEDIUM, HIGH) and a numeric score to the entire Terraform plan.
